@@ -1,26 +1,33 @@
-from pytube import YouTube
-import openai 
-from pydub import AudioSegment
+import streamlit as st
+from function import yt_to_transcript, audiodeleter
 import os
-import requests
 
 # Define the Streamlit app
 def main():
-    # Set the title of the app
-    st.title("Youtube to .txt transcript")
+    st.title("YouTube Transcript Downloader")
 
-    # Add a text input for the user to input the URL
-    url = st.text_input("Enter a URL")
+    video_url = st.text_input("Enter YouTube Video URL:")
 
-    if st.button("Generate transcript"):
-        processed_data = yt_to_transcript(url)
-        
-    # Add a download button to start the processing
-    if st.download_button("Download Now", "transcripts"+processed_data):
-        # Call the process_url function with the user's URL
-
-
+    if video_url:
+        go_button = st.button("Go")
+        if go_button:
+            try:
+                file_path = yt_to_transcript(video_url)
+                if os.path.exists("transcripts/"+file_path):
+                    st.success("Transcript Generated!")
+                    audiodeleter()
+                    with open("transcripts/"+file_path, "r", encoding="utf-8") as f:
+                        transcript_text = f.read()
+                    st.download_button(
+                        label="Download Now",
+                        data=transcript_text,
+                        file_name=file_path,
+                        mime="text/plain",
+                    )
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 # Run the app
 if __name__ == "__main__":
     main()
+    
